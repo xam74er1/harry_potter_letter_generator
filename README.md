@@ -1,70 +1,54 @@
-# Getting Started with Create React App
+# Harry Potter Letter Generator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A magical React app that generates customizable Hogwarts acceptance letters with multiple styles. Users can select between different letter designs — currently **Claude's Hogwarts Letter** and **Mistral's Envelope** — from a main admin panel.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Multiple letter styles**: Choose from different Hogwarts letter designs (`claude`, `mistral`).
+- **Admin panel**: Central UI to configure and select which letter to generate.
+- **URL routing** for letter type selection.
+- **Customizable recipient names** via URL parameters.
+- **Interactive and animated letter experience** (opening envelopes, full-screen letters).
+- Responsive and visually immersive magical theme.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Project Structure
 
-### `npm test`
+- `/claude/HogwartsLetter.js` — Claude's Hogwarts letter React component with animated envelope and parchment letter.
+- `/mistral/Envelope.js` — Another letter/envelope style by Mistral.
+- `/AdminPanel.js` — Main configuration UI to select letter type and manage settings.
+- `/App.js` — Main app with React Router, routes to admin panel or letter styles.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Installation and Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Clone the repo.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+   Sart the development server:
+   ```bash
+   npm start
+   ```
+3. Open your browser at http://localhost:3000/admin to open the Admin Panel.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Usage
+Admin Panel
+Visit /admin to open the main configuration panel.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Select which letter style you want to generate (claude or mistral).
 
-### `npm run eject`
+You can configure recipient name and other settings here (future enhancements).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Viewing Letters
+After selecting a letter type, navigate to /claude or /mistral to see the respective Hogwarts letter experience.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+You can also customize recipient name via URL query parameters:
+ /claude?firstName=Hermione&lastName=Granger
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Clicking the envelope opens the letter with animations and the full letter content.
