@@ -17,7 +17,7 @@ const MistralHogwartsLetter = () => {
   const zIndexCounter = useRef(10);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const firstName = urlParams.get('firstName') || 'Harry';
     const lastName = urlParams.get('lastName') || 'Potter';
     const signature = urlParams.get('signature') || 'Minerva McGonagall';
