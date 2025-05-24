@@ -1,0 +1,85 @@
+/* Background and layout */
+.admin-bg {
+    min-height: 100vh;
+    background-color: #f2e8c9; /* parchment tone */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Georgia', serif;
+    padding: 2rem;
+  }
+  
+  /* Panel styling */
+  .admin-panel {
+    background-color: #fff8e1;
+    border: 1px solid #d4b88c;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    max-width: 700px;
+    width: 100%;
+  }
+  
+  /* Title and description */
+  .admin-title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #4b3621;
+    margin-bottom: 0.5rem;
+  }
+  
+  .admin-desc {
+    text-align: center;
+    color: #5b4a33;
+    margin-bottom: 2rem;
+  }
+  
+  /* Form */
+  .admin-form label {
+    display: block;
+    font-weight: bold;
+    color: #3b2b17;
+    margin-bottom: 0.25rem;
+    margin-top: 1rem;
+  }
+  
+  .admin-form input,
+  .admin-form select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d4b88c;
+    border-radius: 6px;
+    background-color: #fffdf5;
+    font-size: 1rem;
+  }
+  
+  /* Markdown Editor Container */
+  .editor-container {
+    border: 1px solid #d4b88c;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+  
+  /* Button */
+  .button-container {
+    text-align: center;
+    margin-top: 2rem;
+  }
+  
+  .button-container button {
+    background-color: #4b3621;
+    color: white;
+    padding: 0.75rem 2.5rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .button-container button:hover {
+    background-color: #3a2817;
+  }
+  
