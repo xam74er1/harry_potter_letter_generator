@@ -19,7 +19,14 @@ const MistralHogwartsLetter = () => {
   const location = useLocation();
   useEffect(() => {
     
+    
     const urlParams = new URLSearchParams(location.search);
+    console.log("-----");
+    
+    console.log(location.search)
+    console.log(urlParams)
+    console.log(urlParams.get('firstName'));
+    
     const firstName = urlParams.get('firstName') || 'Harry';
     const lastName = urlParams.get('lastName') || 'Potter';
     const signature = urlParams.get('signature') || 'Minerva McGonagall';
