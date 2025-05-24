@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from "react-markdown";
+import { useLocation } from 'react-router-dom';
 
 const ClaudeHogwartsLetter = () => {
   const [isOpened, setIsOpened] = useState(false);
@@ -13,10 +14,11 @@ const [userData, setUserData] = useState({
       signature: 'Minerva McGonagall'
     });
   
-
+    const location = useLocation();
   useEffect(() => {
     // Get parameters from URL
-    const urlParams = new URLSearchParams(window.location.search);
+    
+    const urlParams = new URLSearchParams(location.search);
     const firstName = urlParams.get('firstName') || urlParams.get('first');
     const lastName = urlParams.get('lastName') || urlParams.get('last');
     
@@ -29,7 +31,7 @@ const [userData, setUserData] = useState({
   }, []);
 
     useEffect(() => {
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams = new URLSearchParams(location.search);
       const firstName = urlParams.get('firstName') || 'Harry';
       const lastName = urlParams.get('lastName') || 'Potter';
       const signature = urlParams.get('signature') || 'Minerva McGonagall';

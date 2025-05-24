@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './HogwartsEnvelope.css';
 import ReactMarkdown from "react-markdown";
+import { useLocation } from 'react-router-dom';
 
 const MistralHogwartsLetter = () => {
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
@@ -15,9 +16,10 @@ const MistralHogwartsLetter = () => {
   const envelopeContainerRef = useRef(null);
   const lettersContainerRef = useRef(null);
   const zIndexCounter = useRef(10);
-
+  const location = useLocation();
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    
+    const urlParams = new URLSearchParams(location.search);
     const firstName = urlParams.get('firstName') || 'Harry';
     const lastName = urlParams.get('lastName') || 'Potter';
     const signature = urlParams.get('signature') || 'Minerva McGonagall';
