@@ -22,11 +22,12 @@ function AdminPanel() {
     
     // Default values if no saved data
     return {
+      title: "HOGWARTS SCHOOL of WITCHCRAFT and WIZARDRY",
       firstName: "Harry",
       lastName: "Potter",
       signature: "Minerva McGonagall",
       address: "Hogwarts School of Witchcraft and Wizardry\nHogsmeade, Scotland",
-      logoUrl: "",
+      logoUrl: "https://brandlogos.net/wp-content/uploads/2013/03/hogwarts-vector-logo.png",
       logoSize: "100",
       type: "mistral",
       content: `# Welcome, $fname $lname!\n\nWe are pleased to inform you that you have been accepted at Hogwarts School of Witchcraft and Wizardry.\n\nPlease find enclosed a list of all necessary books and equipment.\n\nYours sincerely,\n\n$signature`,
@@ -82,11 +83,12 @@ function AdminPanel() {
     localStorage.removeItem(STORAGE_KEY);
     // Reset to default values
     setForm({
+      title: "HOGWARTS SCHOOL of WITCHCRAFT and WIZARDRY",
       firstName: "Harry",
       lastName: "Potter",
       signature: "Minerva McGonagall",
       address: "Hogwarts School of Witchcraft and Wizardry\nHogsmeade, Scotland",
-      logoUrl: "",
+      logoUrl: "https://brandlogos.net/wp-content/uploads/2013/03/hogwarts-vector-logo.png",
       logoSize: "100",
       type: "mistral",
       content: `# Welcome, $fname $lname!\n\nWe are pleased to inform you that you have been accepted at Hogwarts School of Witchcraft and Wizardry.\n\nPlease find enclosed a list of all necessary books and equipment.\n\nYours sincerely,\n\n$signature`,
@@ -106,6 +108,10 @@ function AdminPanel() {
         </p>
 
         <form onSubmit={handleSubmit} className="admin-form">
+
+        <label>Title</label>
+          <input type="text" name="title" value={form.title} onChange={handleChange} />
+
           <label>First Name</label>
           <input type="text" name="firstName" value={form.firstName} onChange={handleChange} />
 
