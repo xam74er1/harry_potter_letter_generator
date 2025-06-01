@@ -25,6 +25,9 @@ function AdminPanel() {
       firstName: "Harry",
       lastName: "Potter",
       signature: "Minerva McGonagall",
+      address: "Hogwarts School of Witchcraft and Wizardry\nHogsmeade, Scotland",
+      logoUrl: "",
+      logoSize: "100",
       type: "mistral",
       content: `# Welcome, $fname $lname!\n\nWe are pleased to inform you that you have been accepted at Hogwarts School of Witchcraft and Wizardry.\n\nPlease find enclosed a list of all necessary books and equipment.\n\nYours sincerely,\n\n$signature`,
     };
@@ -50,7 +53,9 @@ function AdminPanel() {
     return text
       .replace(/\$fname/g, form.firstName)
       .replace(/\$lname/g, form.lastName)
-      .replace(/\$signature/g, form.signature);
+      .replace(/\$signature/g, form.signature)
+      .replace(/\$address/g, form.address)
+      .replace(/\$logo/g, form.logoUrl ? `<img src="${form.logoUrl}" alt="Logo" style="max-width: ${form.logoSize}px; height: auto;" />` : "");
   };
 
   // Custom components for MDEditor to show replaced variables in preview
@@ -80,6 +85,9 @@ function AdminPanel() {
       firstName: "Harry",
       lastName: "Potter",
       signature: "Minerva McGonagall",
+      address: "Hogwarts School of Witchcraft and Wizardry\nHogsmeade, Scotland",
+      logoUrl: "",
+      logoSize: "100",
       type: "mistral",
       content: `# Welcome, $fname $lname!\n\nWe are pleased to inform you that you have been accepted at Hogwarts School of Witchcraft and Wizardry.\n\nPlease find enclosed a list of all necessary books and equipment.\n\nYours sincerely,\n\n$signature`,
     });
@@ -93,7 +101,7 @@ function AdminPanel() {
           Create a magical Hogwarts letter with your own message and generate a shareable URL.
         </p>
         <p className="admin-desc">
-          You can use <code>$fname</code> for First Name, <code>$lname</code> for Last Name, and <code>$signature</code> for the signature.
+          You can use <code>$fname</code> for First Name, <code>$lname</code> for Last Name, <code>$signature</code> for the signature, <code>$address</code> for the address, and <code>$logo</code> for the logo.
           These will be automatically replaced when the letter is generated and in the preview below.
         </p>
 
@@ -106,6 +114,35 @@ function AdminPanel() {
 
           <label>Signature</label>
           <input type="text" name="signature" value={form.signature} onChange={handleChange} />
+
+          <label>Address</label>
+          <textarea 
+            name="address" 
+            value={form.address} 
+            onChange={handleChange}
+            rows="3"
+            placeholder="Enter the address (use line breaks for multiple lines)"
+          />
+
+          <label>Logo URL</label>
+          <input 
+            type="url" 
+            name="logoUrl" 
+            value={form.logoUrl} 
+            onChange={handleChange}
+            placeholder="https://example.com/logo.png"
+          />
+
+          <label>Logo Size (pixels)</label>
+          <input 
+            type="number" 
+            name="logoSize" 
+            value={form.logoSize} 
+            onChange={handleChange}
+            min="10"
+            max="500"
+            placeholder="100"
+          />
 
           <label>Letter Type</label>
           <select name="type" value={form.type} onChange={handleChange}>

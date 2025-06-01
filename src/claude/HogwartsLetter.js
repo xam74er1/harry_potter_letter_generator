@@ -1,39 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from "react-markdown";
-import { useLocation } from 'react-router-dom';
 
 const ClaudeHogwartsLetter = () => {
+  const [isFlipped, setIsFlipped] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const [showLetter, setShowLetter] = useState(false);
   const [userName, setUserName] = useState({ first: 'Harry', last: 'Potter' });
-
-const [letterContent, setLetterContent] = useState('');
-const [userData, setUserData] = useState({
+  const [letterContent, setLetterContent] = useState('');
+  const [userData, setUserData] = useState({ // userData state is present
       firstName: 'Harry',
       lastName: 'Potter',
       signature: 'Minerva McGonagall'
     });
   
-    const location = useLocation();
+  // New state for managing the end of the initial fly-in animation
+  const [startFloating, setStartFloating] = useState(false);
+
   useEffect(() => {
-    // Get parameters from URL
+    // Timer to trigger the floating animation after the fly-in animation completes
+    const floatTimer = setTimeout(() => {
+      setStartFloating(true);
+    }, 1000); // This duration should match the flyIn animation duration (1s)
     
-    const urlParams = new URLSearchParams(location.search);
-    const firstName = urlParams.get('firstName') || urlParams.get('first');
-    const lastName = urlParams.get('lastName') || urlParams.get('last');
+    return () => clearTimeout(floatTimer); // Cleanup timer on component unmount
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  useEffect(() => {
+    // Get parameters from URL for userName (address display)
+    const urlParams = new URLSearchParams(window.location.search);
+    const firstNameFromUrl = urlParams.get('firstName') || urlParams.get('first');
+    const lastNameFromUrl = urlParams.get('lastName') || urlParams.get('last');
     
-    if (firstName || lastName) {
+    if (firstNameFromUrl || lastNameFromUrl) {
       setUserName({
-        first: firstName || 'Harry',
-        last: lastName || 'Potter'
+        first: firstNameFromUrl || 'Harry',
+        last: lastNameFromUrl || 'Potter'
       });
     }
-  }, []);
+  }, []); 
 
-    useEffect(() => {
-      const urlParams = new URLSearchParams(location.search);
-      const firstName = urlParams.get('firstName') || 'Harry';
-      const lastName = urlParams.get('lastName') || 'Potter';
+  useEffect(() => {
+      // Get parameters from URL for letter content
+      const urlParams = new URLSearchParams(window.location.search);
+      const firstName = urlParams.get('firstName') || urlParams.get('first') || 'Harry';
+      const lastName = urlParams.get('lastName') || urlParams.get('last') || 'Potter';
       const signature = urlParams.get('signature') || 'Minerva McGonagall';
       const rawContent = urlParams.get('content');
   
@@ -43,6 +53,8 @@ const [userData, setUserData] = useState({
   We are pleased to inform you that you have been accepted at Hogwarts School of Witchcraft and Wizardry.
   
   Please find enclosed a list of all necessary books and equipment.
+  
+  Term begins on 1 September. We await your owl by no later than 31 July.
   
   Yours sincerely,
   
@@ -56,23 +68,36 @@ const [userData, setUserData] = useState({
         .replace(/\$lname/g, lastName)
         .replace(/\$signature/g, signature);
   
-      setUserData({ firstName, lastName, signature });
+      setUserData({ firstName, lastName, signature }); 
       setLetterContent(replacedContent);
+
+      // Update userName for address if driven by these params too
+      setUserName(prevUserName => ({
+        first: firstName || prevUserName.first,
+        last: lastName || prevUserName.last
+      }));
+
     }, []);
 
   const handleEnvelopeClick = () => {
-    if (!isOpened) {
+    if (!isFlipped) {
+      setIsFlipped(true);
+    } else if (!isOpened) {
       setIsOpened(true);
-      // Show letter after envelope opens
       setTimeout(() => {
         setShowLetter(true);
-      }, 600);
+      }, 600); 
     }
   };
 
   const resetLetter = () => {
     setShowLetter(false);
-    setIsOpened(false);
+    setTimeout(() => {
+      setIsOpened(false);
+      setTimeout(() => {
+        setIsFlipped(false);
+      }, 400);
+    }, 300);
   };
 
   return (
@@ -80,11 +105,29 @@ const [userData, setUserData] = useState({
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Cinzel:wght@400;600;700&display=swap');
         
+        /* --- NEW ANIMATION KEYFRAMES --- */
+        @keyframes flyIn {
+          0%   {
+            transform: translate(1000px, -100px) rotate(-40deg) scale(.3);
+            opacity: 0;
+          }
+          /* Midpoint for dynamic entry, reverses flyAway's 50% state */
+          60% { 
+            transform: translate(-50px, -50px) rotate(40deg) scale(.5);
+            opacity: 0.7;
+          }
+          100% {
+            transform: translate(0px, 0px) rotate(0deg) scale(1);
+            opacity: 1;
+          }
+            
+        }
+        
         .magical-bg {
           background: linear-gradient(135deg, #1a1c3a 0%, #2d1b69 50%, #000000 100%);
           min-height: 100vh;
           position: relative;
-          overflow: hidden;
+          overflow: hidden; /* Important to hide element before it flies in */
         }
         
         .stars {
@@ -101,26 +144,48 @@ const [userData, setUserData] = useState({
           cursor: pointer;
           position: relative;
           max-width: 100%;
-          width: 400px;
+          width: 400px; /* Envelope width */
+          /* The .animate-fly-in class will be added via JSX to apply the flyIn animation */
         }
         
-        .envelope-container:hover:not(.opened) {
+        /* --- NEW CLASS TO APPLY THE flyIn ANIMATION --- */
+        .animate-fly-in {
+          /* Using cubic-bezier for a nice easeOutQuint arrival feel */
+          animation: flyIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; 
+        }
+        
+        .envelope-container:hover:not(.flipped):not(.opened) {
           transform: scale(1.02);
           transition: transform 0.3s ease;
         }
         
-        .envelope-wrapper {
+        .envelope-flipper {
           position: relative;
-          overflow: hidden;
-          padding-top: 70%;
-          background: linear-gradient(0deg, #e8d5a6 0%, #e8d5a6 100%, rgba(244, 229, 193, 0) 55%, rgba(244, 229, 193, 0) 100%);
           width: 100%;
-          animation: ${!isOpened ? 'float 4s ease-in-out infinite' : 'none'};
-          box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-          border: 2px solid #8b6914;
+          height: 0; 
+          padding-top: 70%; 
+          transform-style: preserve-3d;
+          transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          transform: ${isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'};
         }
         
-        .envelope-wrapper::before {
+        .envelope-face {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          backface-visibility: hidden; 
+          background: linear-gradient(0deg, #e8d5a6 0%, #e8d5a6 100%, rgba(244, 229, 193, 0) 55%, rgba(244, 229, 193, 0) 100%);
+          /* --- MODIFIED float ANIMATION --- */
+          /* Now depends on startFloating state to delay it until flyIn is done */
+          animation: ${startFloating && !isFlipped && !isOpened ? 'float 4s ease-in-out infinite' : 'none'};
+          box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+          border: 2px solid #8b6914; 
+          overflow: hidden; 
+        }
+        
+        .envelope-face::before {
           content: '';
           position: absolute;
           inset: 0;
@@ -130,36 +195,91 @@ const [userData, setUserData] = useState({
           pointer-events: none;
         }
         
-        /* Top flap that opens */
+        .envelope-back {
+          transform: rotateY(0deg);
+        }
+        
+        .envelope-front {
+          transform: rotateY(180deg);
+        }
+        
+        .envelope-back .address {
+          position: absolute;
+          top: 50%; 
+          left: 50%;
+          transform: translate(-50%, -50%); 
+          text-align: center;
+          font-family: 'Cinzel', serif;
+          color: #2c1810; 
+          z-index: 5; 
+          display: block; 
+          padding: 10px; 
+          line-height: 1.5; 
+        }
+        
+        .envelope-front .address {
+          display: none;
+        }
+        
+        .envelope-back .back-seal {
+          position: absolute;
+          top: 35%; 
+          left: 50%;
+          transform: translateX(-50%) translateY(-50%);
+          width: 45px;
+          height: 45px;
+          background: radial-gradient(circle, #8b0000 0%, #660000 70%, #4d0000 100%); 
+          border-radius: 50%;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Cinzel', serif;
+          font-weight: 700;
+          color: #ffd700; 
+          font-size: 18px;
+          z-index: 10; 
+        }
+        
+        .envelope-front .back-seal {
+          display: none;
+        }
+
         .envelope-top {
           filter: drop-shadow(0px 6px 3px rgba(50, 50, 0, 0.2));
           position: absolute;
           width: 100%;
-          height: 33%;
+          height: 50%; 
           top: 0%;
-          z-index: 99;
-          transition: all 0.4s ease-in-out;
+          z-index: 99; 
+          transition: transform 0.4s ease-in-out; 
           transform-origin: top;
-          transform: ${isOpened ? 'rotateX(-180deg)' : 'rotateX(0deg)'};
+          transform: ${isOpened ? 'rotateX(-170deg)' : 'rotateX(0deg)'}; 
         }
         
-        .envelope-top::before {
+        .envelope-top::before { 
           content: '';
           position: absolute;
           transform-origin: top;
           width: 100%;
           height: 100%;
-          background: linear-gradient(145deg, #d4c294 0%, #c7b885 50%, #b8a776 100%);
-          clip-path: polygon(50% 100%, 0 0, 100% 0);
-          transition: all 0.4s ease-in-out;
+          background: linear-gradient(145deg, #d4c294 0%, #c7b885 50%, #b8a776 100%); 
+          clip-path: polygon(50% 100%, 0 0, 100% 0); 
           border: 2px solid #8b6914;
-          border-bottom: none;
+          border-bottom: none; 
+          box-sizing: border-box;
+        }
+
+        .envelope-back .envelope-top {
+            display: none;
+        }
+        .envelope-front .envelope-top {
+            display: block; 
         }
         
-        /* Wax seal */
-        .wax-seal {
+        .wax-seal { 
           position: absolute;
-          bottom: -5px;
+          bottom: 10px; 
           left: 50%;
           transform: translateX(-50%);
           width: 35px;
@@ -174,39 +294,27 @@ const [userData, setUserData] = useState({
           font-weight: 700;
           color: #ffd700;
           font-size: 16px;
-          z-index: 100;
+          z-index: 100; 
         }
         
-        /* Address on envelope */
-        .address {
-          position: absolute;
-          top: 60%;
-          left: 50%;
-          transform: translateX(-50%);
-          text-align: center;
-          font-family: 'Cinzel', serif;
-          color: #2c1810;
-          z-index: 5;
-        }
-        
-        /* Letter that slides out */
         .letter-paper {
           position: absolute;
-          top: 15%;
-          left: 8%;
-          right: 8%;
-          bottom: 15%;
-          background: linear-gradient(145deg, #faf5e4 0%, #f5e6d3 30%, #f0dcc4 70%, #ebceb0 100%);
+          top: 5%; 
+          left: 5%;
+          right: 5%;
+          height: 90%; 
+          background: linear-gradient(145deg, #faf5e4 0%, #f5e6d3 30%, #f0dcc4 70%, #ebceb0 100%); 
           border: 1px solid #d4c294;
           box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-          transform: ${showLetter ? 'translateY(-30px) scale(1.1)' : 'translateY(0) scale(1)'};
-          opacity: ${showLetter ? '1' : '0'};
-          transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          z-index: 50;
+          transform: ${isOpened ? (showLetter ? 'translateY(-10px) scale(1.05)' : 'translateY(20%) scale(0.95)') : 'translateY(30%) scale(0.9)'};
+          opacity: ${isOpened && showLetter ? '1' : '0'};
+          visibility: ${isOpened ? 'visible' : 'hidden'};
+          transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s, opacity 0.5s ease-out 0.2s, visibility 0s linear ${isOpened ? 0 : 0.7}s; 
+          z-index: 50; 
           overflow: hidden;
         }
         
-        .letter-paper::before {
+        .letter-paper::before { 
           content: '';
           position: absolute;
           inset: 0;
@@ -216,61 +324,59 @@ const [userData, setUserData] = useState({
           pointer-events: none;
         }
         
-        /* Letter content */
         .parchment {
-          padding: 20px 15px 15px 15px;
+          padding: 15px 10px; 
           height: 100%;
           position: relative;
           font-family: 'Kalam', cursive;
           color: #2c1810;
-          line-height: 1.4;
-          overflow-y: auto;
+          line-height: 1.3; 
+          overflow-y: auto; 
+          font-size: 9px; 
         }
         
-        .hogwarts-header {
+        .hogwarts-header { 
           text-align: center;
-          margin-bottom: 15px;
+          margin-bottom: 10px;
           font-family: 'Cinzel', serif;
         }
         
-        .hogwarts-crest {
-          width: 35px;
-          height: 35px;
-          margin: 0 auto 8px;
+        .hogwarts-crest { 
+          width: 30px; 
+          height: 30px;
+          margin: 0 auto 5px;
           background: radial-gradient(circle, #8b0000 0%, #660000 70%, #4d0000 100%);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 16px;
+          font-size: 14px; 
           color: #ffd700;
           box-shadow: 0 3px 8px rgba(0,0,0,0.3);
         }
         
-        .letter-content {
-          font-size: 11px;
+        .letter-content { 
           font-family: 'Kalam', cursive;
         }
         
-        .signature {
-          margin-top: 15px;
+        .signature { 
+          margin-top: 10px;
           text-align: right;
           font-family: 'Kalam', cursive;
-          font-size: 12px;
+          font-size: 10px; 
         }
         
-        /* Full screen letter view */
         .full-letter {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0,0,0,0.9);
+          background: rgba(0,0,0,0.9); 
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 1000;
+          z-index: 1000; 
           padding: 20px;
           animation: fadeIn 0.3s ease-out;
         }
@@ -278,16 +384,20 @@ const [userData, setUserData] = useState({
         .full-letter-content {
           background: linear-gradient(145deg, #faf5e4 0%, #f5e6d3 30%, #f0dcc4 70%, #ebceb0 100%);
           max-width: 600px;
+          width: 90%;
           max-height: 85vh;
-          padding: 40px;
+          padding: 30px 40px; 
           border: 2px solid #d4c294;
           box-shadow: 0 20px 60px rgba(0,0,0,0.5);
           overflow-y: auto;
           position: relative;
           animation: letterSlideIn 0.5s ease-out;
+          font-family: 'Kalam', cursive; 
+          color: #2c1810;
+          line-height: 1.6;
         }
         
-        .full-letter-content::before {
+        .full-letter-content::before { 
           content: '';
           position: absolute;
           inset: 0;
@@ -295,6 +405,17 @@ const [userData, setUserData] = useState({
             radial-gradient(circle at 25% 25%, rgba(139, 105, 20, 0.08) 0%, transparent 50%),
             radial-gradient(circle at 75% 75%, rgba(139, 105, 20, 0.06) 0%, transparent 50%);
           pointer-events: none;
+        }
+
+        .full-letter-content h1 {
+          font-family: 'Cinzel', serif;
+          text-align: center;
+          font-size: 22px; 
+          margin-bottom: 15px;
+        }
+        .full-letter-content p {
+          margin-bottom: 1em;
+          font-size: 17px; 
         }
         
         .reset-btn, .close-btn {
@@ -318,7 +439,7 @@ const [userData, setUserData] = useState({
         
         .click-hint {
           position: absolute;
-          bottom: -60px;
+          bottom: -70px; 
           left: 50%;
           transform: translateX(-50%);
           color: #ffd700;
@@ -327,6 +448,8 @@ const [userData, setUserData] = useState({
           animation: pulse 2s ease-in-out infinite;
           font-size: 14px;
           white-space: nowrap;
+          z-index: 10; 
+          padding: 5px;
         }
         
         @keyframes float {
@@ -364,8 +487,7 @@ const [userData, setUserData] = useState({
       `}</style>
       
       <div className="magical-bg">
-        {/* Animated stars */}
-        {[...Array(30)].map((_, i) => (
+        {[...Array(50)].map((_, i) => (
           <div
             key={i}
             className="stars"
@@ -373,98 +495,92 @@ const [userData, setUserData] = useState({
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
+              animationDuration: `${2 + Math.random() * 2}s`,
+              transform: `scale(${0.5 + Math.random() * 0.8})`
             }}
           />
         ))}
         
         <div style={{ 
           display: 'flex', 
+          flexDirection: 'column',
           alignItems: 'center', 
           justifyContent: 'center', 
           minHeight: '100vh',
           padding: '20px'
         }}>
+          {/* --- ADDED animate-fly-in CLASS HERE --- */}
           <div 
-            className={`envelope-container ${isOpened ? 'opened' : ''}`}
+            className={`envelope-container animate-fly-in ${isFlipped ? 'flipped' : ''} ${isOpened ? 'opened' : ''}`}
             onClick={handleEnvelopeClick}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleEnvelopeClick()}
           >
-            <div className="envelope-wrapper">
-              {/* Address on envelope body */}
-              <div className="address">
-                <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
-                  Mr. {userName.first[0]}. {userName.last}
-                </div>
-                <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
-                  The Cupboard under the Stairs<br/>
-                  4 Privet Drive<br/>
-                  Little Whinging<br/>
-                  Surrey
+            <div className="envelope-flipper">
+              {/* Back of envelope (shown first, when !isFlipped) */}
+              {!isFlipped && (
+              <div className="envelope-face envelope-back">
+                <div className="address">
+                  <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
+                    Mr. {userName.first.charAt(0).toUpperCase()}. {userName.last}
+                  </div>
+                  <div style={{ fontSize: '13px' }}>
+                    The Cupboard under the Stairs<br/>
+                    4 Privet Drive<br/>
+                    Little Whinging<br/>
+                    Surrey
+                  </div>
                 </div>
               </div>
+              )}
               
-              {/* Letter inside envelope */}
-              <div className="letter-paper">
-                <div className="parchment">
-                  <div className="hogwarts-header">
-                    <div className="hogwarts-crest">⚡</div>
-                    <h1 style={{ fontSize: '14px', margin: '0 0 3px 0', fontWeight: '700' }}>
-                      HOGWARTS SCHOOL
-                    </h1>
-                    <p style={{ fontSize: '10px', margin: '0 0 10px 0', fontWeight: '400' }}>
-                      of WITCHCRAFT and WIZARDRY
-                    </p>
-                  </div>
-                  
-                  <div className="letter-content">
-                    <p style={{ marginBottom: '8px', textAlign: 'right', fontSize: '9px' }}>
-                      Headmaster: Albus Dumbledore
-                    </p>
-                    
-                    <p style={{ marginBottom: '8px' }}>Dear Mr. {userName.last},</p>
-                    
-                    <p style={{ marginBottom: '8px' }}>
-                      We are pleased to inform you that you have been accepted at 
-                      Hogwarts School of Witchcraft and Wizardry.
-                    </p>
-                    
-                    <p style={{ marginBottom: '8px' }}>
-                      Term begins on 1 September.
-                    </p>
-                    
-                    <p style={{ marginBottom: '10px' }}>Yours sincerely,</p>
-                    
-                    <div className="signature">
-                      <p style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '700' }}>
-                        Minerva McGonagall
+              {/* Front of envelope (shown after flip, when isFlipped) */}
+              {isFlipped && (
+              <div className="envelope-face envelope-front">
+                <div className="letter-paper">
+                  <div className="parchment">
+                    <div className="hogwarts-header">
+                      <div className="hogwarts-crest">⚡</div>
+                      <h2 style={{ fontSize: '12px', margin: '0 0 2px 0', fontWeight: '700' }}>
+                        HOGWARTS SCHOOL
+                      </h2>
+                      <p style={{ fontSize: '8px', margin: '0 0 8px 0', fontWeight: '400' }}>
+                        of WITCHCRAFT and WIZARDRY
                       </p>
-                      <p style={{ fontSize: '9px', margin: '0', fontStyle: 'italic' }}>
-                        Deputy Headmistress
-                      </p>
+                    </div>
+                    <div className="letter-content">
+                       <ReactMarkdown>{letterContent.substring(0, 200) + "..."}</ReactMarkdown> 
                     </div>
                   </div>
                 </div>
+                
+                {/* .envelope-top is part of .envelope-front */}
+                <div className="envelope-top">
+                  <div className="wax-seal">H</div>
+                </div>
               </div>
-              
-              {/* Top flap that opens */}
-              <div className="envelope-top">
-                <div className="wax-seal">H</div>
-              </div>
+              )}
             </div>
             
             {!isOpened && (
-              <div className="click-hint">
-                ✨ Click to open your Hogwarts letter ✨
-              </div>
+                !isFlipped ? (
+                <div className="click-hint">
+                    ✨ Click to flip your Hogwarts letter ✨
+                </div>
+                ) : (
+                <div className="click-hint">
+                    ✨ Click again to open the envelope ✨
+                </div>
+                )
             )}
           </div>
         </div>
         
-        {/* Full screen letter when opened */}
         {showLetter && (
-          <div className="full-letter" onClick={(e) => e.target.className === 'full-letter' && resetLetter()}>
+          <div className="full-letter" onClick={(e) => { if (e.target === e.currentTarget) resetLetter(); }}>
             <div className="full-letter-content">
-              <div className="hogwarts-header">
+              <div className="hogwarts-header" style={{ fontFamily: 'Cinzel, serif', color: '#2c1810' }}>
                 <div style={{ 
                   width: '60px', 
                   height: '60px', 
@@ -474,21 +590,21 @@ const [userData, setUserData] = useState({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '24px',
+                  fontSize: '28px',
                   color: '#ffd700',
                   boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
                 }}>⚡</div>
-                <h1 style={{ fontSize: '24px', margin: '0 0 8px 0', fontWeight: '700' }}>
+                <h1 style={{ fontSize: '28px', margin: '0 0 5px 0', fontWeight: '700' }}>
                   HOGWARTS SCHOOL
                 </h1>
-                <p style={{ fontSize: '16px', margin: '0 0 20px 0', fontWeight: '400' }}>
+                <p style={{ fontSize: '18px', margin: '0 0 15px 0', fontWeight: '400' }}>
                   of WITCHCRAFT and WIZARDRY
                 </p>
-                <div style={{ width: '100px', height: '2px', background: '#8b6914', margin: '0 auto 20px' }}></div>
+                <div style={{ width: '120px', height: '2px', background: '#8b6914', margin: '0 auto 25px' }}></div>
               </div>
               
-              <div style={{ fontSize: '18px', fontFamily: 'Kalam, cursive', color: '#2c1810', lineHeight: '1.6' }}>
-              <ReactMarkdown>{letterContent}</ReactMarkdown>
+              <div className="letter-text-content">
+                <ReactMarkdown>{letterContent}</ReactMarkdown>
               </div>
               
               <div style={{ textAlign: 'center', marginTop: '30px' }}>
